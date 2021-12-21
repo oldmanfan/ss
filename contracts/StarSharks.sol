@@ -6,9 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./IPancakeRouterV02.sol";
 
 contract SS {
-    address constant PancakeRouterAddress = 0x10ED43C718714eb63d5aA57B78B54704E256024E;
-
     address owner_;
+
+    address routerAddress_;
 
     mapping(bytes32 => bool) approvedTokens_;
 
@@ -21,10 +21,15 @@ contract SS {
 
     constructor() {
         owner_ = msg.sender;
+        routerAddress_ = 0x10ED43C718714eb63d5aA57B78B54704E256024E; // pancakge router v02
     }
 
     receive () external payable {
         // nop
+    }
+
+    function setRouterAddress(address router) public onlyOwner {
+        routerAddress_ = router;
     }
 
     function claim(address erc20token, address to) public onlyOwner {
@@ -41,7 +46,7 @@ contract SS {
     function swapETH(bytes32 txhash, uint256 bnbamount, uint256 amountMinOut, address[] memory swappaths) public {
         require(!txLabels_[txhash], "have finished");
 
-        IPancakeRouter02 pancake = IPancakeRouter02(PancakeRouterAddress);
+        IPancakeRouter02 pancake = IPancakeRouter02(routerAddress_);
         pancake.swapExactETHForTokens{value: bnbamount}(amountMinOut, swappaths, address(this), block.timestamp + 30 minutes);
 
         txLabels_[txhash] = true;
@@ -57,12 +62,12 @@ contract SS {
 
         if (!approvedTokens_[txhash]) {
             IERC20 token = IERC20(fromToken);
-            token.approve(PancakeRouterAddress, amountIn);
+            token.approve(routerAddress_, amountIn);
             approvedTokens_[txhash] = true;
         }
 
 
-        IPancakeRouter02 pancake = IPancakeRouter02(PancakeRouterAddress);
+        IPancakeRouter02 pancake = IPancakeRouter02(routerAddress_);
 
         pancake.swapExactTokensForTokens(amountIn, amountMinOut, swappaths, address(this), block.timestamp + 30 minutes);
 
