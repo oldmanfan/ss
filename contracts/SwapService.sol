@@ -4,11 +4,14 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "./IPancakeRouterV02.sol";
+import "./SwapProxy.sol";
 
 contract SwapService {
     address owner_;
 
     address routerAddress_;
+
+    address proxyAddress_;
 
     // 存入ETH的数量, 账号 => ETH数量
     mapping(address => uint256) depositEth_;
@@ -26,9 +29,10 @@ contract SwapService {
         _;
     }
 
-    constructor(address router) {
+    constructor(address router, address proxy) {
         owner_ = msg.sender;
         routerAddress_ = router;
+        proxyAddress_ = proxy;
     }
 
     receive () external payable {
@@ -78,21 +82,13 @@ contract SwapService {
     // @param ethamount     准备兑换的ETH数量
     // @param amountMinOut  最小可接受的输出
     // @param swappaths     兑换路径
-    function swapETH(address depositer, uint256 ethamount, uint256 amountMinOut, address[] memory swappaths) public {
-        uint256 depositedEth = depositEth_[depositer];
-        require(depositedEth >= ethamount, "no enough ETH left to swap");
+    function swapETH(address depositer, address[] memory swappaths) public {
+        uint256 depositEth = depositEth_[depositer];
 
-        IPancakeRouter02 pancake = IPancakeRouter02(routerAddress_);
-
-        uint counts = swappaths.length;
-        uint256[] memory swapOutAmounts = new uint256[](counts);
-
-        swapOutAmounts = pancake.swapExactETHForTokens{value: ethamount}(amountMinOut, swappaths, address(this), block.timestamp + 30 minutes);
-
-        address erc20TokenAddress = swappaths[counts - 1];
-
-        swapedTokens_[depositer][erc20TokenAddress] = swapOutAmounts[counts - 1];
-
-        depositEth_[depositer] -= ethamount;
+        SwapProxy proxy = SwapProxy(proxyAddress_);
+        uint256 minOut = 4e18; // 1ETH : 4TOKEN
+        while(depositEth > 1e18) { // 每次兑换1个ETH
+            proxy.swapETH{value: 1e18}(routerAddress_, minOut, swappaths);
+        }
     }
 }
