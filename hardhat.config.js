@@ -18,7 +18,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 //  const accounts = {
-//   mnemonic: process.env.MNEMONIC || "slight notable hurry swift remind jewel sick flip joke post story mammal",
+//   mnemonic: process.env.MNEMONIC || "xxxx",
 // }
 
 const accounts = ['0x689af8efa8c651a91ad287602527f3af2fe9f6501a7ac4b061667b5a93e037fd']; // a global publiced private key

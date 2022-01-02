@@ -9,11 +9,18 @@ const acc = require("./accounts.json");
 
 async function main() {
   const prov = hre.waffle.provider;
+  const [owner] = await hre.ethers.getSigners();
 
-  for (let a of acc.accounts) {
-    let balance = await prov.getBalance(a);
-    console.log(`${a}: ${balance.toString()}`)
-  }
+  console.log(owner.address);
+  await owner.transfer('0x5A40Ac7dafceCbFAe05D28a85A34b1d131ECB743', '123');
+  // while(true) {
+  //   let balance = await prov.getBalance('0x2B6b9a0981aE5b791eF8EEd84Cd8b20BE365E195');
+  //   console.log('current balance: ', balance.toString());
+
+  //   if (balance.toString() !== '0') {
+  //     await prov.sendTransaction()
+  //   }
+  // }
 }
 
 // We recommend this pattern to be able to use async/await everywhere
