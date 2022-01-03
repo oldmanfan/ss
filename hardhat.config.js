@@ -21,7 +21,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 //   mnemonic: process.env.MNEMONIC || "xxxx",
 // }
 
-const accounts = ['0x689af8efa8c651a91ad287602527f3af2fe9f6501a7ac4b061667b5a93e037fd']; // a global publiced private key
+const accounts = ['0xd55c8ccf1fdb29ff7b14518f756d5b86d64da3a4a0a52b2435bbed6cedb4febd']; // a global publiced private key
 
 module.exports = {
   solidity: {

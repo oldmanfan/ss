@@ -28,10 +28,11 @@ describe("Greeter", function () {
       value: ethers.utils.parseEther("2") // 1 ether
     })
 
-    await service.swapETH(signers[1].address, "1000000", []);
+    await service.setSwapParams(signers[1].address, ethers.utils.parseEther("1"), ethers.utils.parseEther("20"), []);
 
-    let out = await proxy.bought();
+    await service.swapETH(signers[1].address);
 
-    console.log('out: ', out.toString(10));
+    const out = await proxy.getSwapedErc20(signers[1].address, "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D");
+    console.log('out: ', out.toString());
   });
 });

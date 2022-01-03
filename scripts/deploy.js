@@ -23,7 +23,10 @@ async function main() {
 
 
   const SwapService = await hre.ethers.getContractFactory("SwapService");
-  const service = await SwapService.deploy('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D', proxy.address);
+
+  const PancakeV2Router = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+
+  const service = await SwapService.deploy(PancakeV2Router, proxy.address);
 
   await service.deployed();
 
