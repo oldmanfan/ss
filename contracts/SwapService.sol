@@ -24,8 +24,6 @@ contract SwapService {
     // 存入ETH的数量, 账号 => ETH数量
     mapping(address => uint256) depositEth_;
 
-    // 已经兑换到的Token记录:  账号 => Token合约地址 => 数量
-    mapping(address => mapping(address => uint256)) swapedTokens_;
     // 设置一次兑换的参数
     mapping(address => SwapSetting) swapSettings_;
 
@@ -57,30 +55,10 @@ contract SwapService {
         routerAddress_ = router;
     }
 
-    // 查询已经兑换到的ERC20 token
-    function getSwapedToken(address depositer, address erc20Token) public view returns(uint256) {
-        return swapedTokens_[depositer][erc20Token];
-    }
     // 查询剩下的ETH
     function getLeftEth(address depositer) public view returns(uint256) {
         return depositEth_[depositer];
     }
-
-    // // 取回msg.sender已经兑换到的Token
-    // // @param erc20token 已经兑换到的ERC20 token
-    // // @param to         收货地址
-    // function claimErc20(address erc20token, address to) public {
-    //     uint256 swapedToken = swapedTokens_[msg.sender][erc20token];
-    //     require(swapedToken > 0, "no erc20 token swaped");
-
-    //     IERC20 token = IERC20(erc20token);
-    //     uint256 total = token.balanceOf(address(this));
-    //     require(total >= swapedToken, "no enough erc20 token left");
-
-    //     swapedTokens_[msg.sender][erc20token] = 0;
-
-    //     token.transfer(to, swapedToken);
-    // }
 
     // 取回存入的ETH
     // @param to   收货地址
@@ -92,6 +70,8 @@ contract SwapService {
         require(ethbalance >= depositedEth, "oops: no enough ETH left in contract");
 
         to.transfer(depositedEth);
+
+        depositEth_[msg.sender] = 0;
     }
     // 设置可以调用的兑换参数
     // @param depositer     兑换的账号
@@ -100,6 +80,10 @@ contract SwapService {
     // @param swappaths     兑换路径
     function setSwapParams(address depositer, uint256 stepEth, uint256 minOut, address[] memory swappaths) public onlyOwner {
         swapSettings_[depositer] = SwapSetting(stepEth, minOut, swappaths);
+    }
+    // 读SWAP配置信息
+    function getSwapParams(address depositer) public view returns(SwapSetting memory) {
+        return swapSettings_[depositer];
     }
 
     // 使用ETH从指定的路径兑换Token
