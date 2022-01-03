@@ -60,7 +60,7 @@ module.exports = {
       tags: ["test", "local"],
     },
     ropsten: {
-      url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      url: `https://ropsten.infura.io/v3/4680bd81ed57488384c037ea3b654468`,
       accounts,
       chainId: 3,
       live: true,

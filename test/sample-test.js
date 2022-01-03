@@ -3,17 +3,35 @@ const { ethers } = require("hardhat");
 
 describe("Greeter", function () {
   it("Should return the new greeting once it's changed", async function () {
-    const Greeter = await ethers.getContractFactory("SS");
-    const greeter = await Greeter.deploy("Hello, world!");
-    await greeter.deployed();
 
-    expect(await greeter.greet()).to.equal("Hello, world!");
+    const signers = await ethers.getSigners();
 
-    const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
+    const SwapProxy = await ethers.getContractFactory("SwapProxy");
+    const proxy = await SwapProxy.deploy();
 
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
+    await proxy.deployed();
 
-    expect(await greeter.greet()).to.equal("Hola, mundo!");
+    console.log("SwapProxy deployed to:", proxy.address);
+
+
+    const SwapService = await ethers.getContractFactory("SwapService");
+    const service = await SwapService.deploy('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D', proxy.address);
+
+    await service.deployed();
+
+
+    console.log("SWapService deployed to : ", service.address);
+    // let p = signers[1];
+    // await p.transfer(service.address, "100000000000000000");
+    await signers[1].sendTransaction({
+      to: service.address,
+      value: ethers.utils.parseEther("2") // 1 ether
+    })
+
+    await service.swapETH(signers[1].address, "1000000", []);
+
+    let out = await proxy.bought();
+
+    console.log('out: ', out.toString(10));
   });
 });

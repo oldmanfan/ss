@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "./IPancakeRouterV02.sol";
 import "./SwapProxy.sol";
+import "hardhat/console.sol";
 
 contract SwapService {
     address owner_;
@@ -43,8 +44,16 @@ contract SwapService {
         revert("not support anonmous calling");
     }
 
+    function setProxyAddress(address proxy) public {
+        proxyAddress_ = proxy;
+    }
+
     function setRouterAddress(address router) public onlyOwner {
         routerAddress_ = router;
+    }
+
+    function getSwapedToken(address depositer, address erc20Token) public view returns(uint256) {
+        return swapedTokens_[depositer][erc20Token];
     }
 
     // 取回msg.sender已经兑换到的Token
@@ -82,13 +91,29 @@ contract SwapService {
     // @param ethamount     准备兑换的ETH数量
     // @param amountMinOut  最小可接受的输出
     // @param swappaths     兑换路径
-    function swapETH(address depositer, address[] memory swappaths) public {
+    function swapETH(address depositer, uint256 minoutPerLoop, address[] memory swappaths) public {
         uint256 depositEth = depositEth_[depositer];
 
-        SwapProxy proxy = SwapProxy(proxyAddress_);
-        uint256 minOut = 4e18; // 1ETH : 4TOKEN
-        while(depositEth > 1e18) { // 每次兑换1个ETH
-            proxy.swapETH{value: 1e18}(routerAddress_, minOut, swappaths);
+        // uint256 minOut = 4e18; // 1ETH : 4TOKEN
+        uint256 perLoop = 1e16;
+        uint i = 1;
+        while (depositEth >= perLoop) { // 每次兑换1个ETH
+
+           (bool success, ) =
+            proxyAddress_.call{value: perLoop}(
+                abi.encodeWithSignature(
+                    "swap(address,uint256,address[])",
+                    routerAddress_,
+                    minoutPerLoop * i,
+                    swappaths
+                )
+            );
+            if (!success) break;
+
+            depositEth -= perLoop;
+
+            i++;
         }
+        depositEth_[depositer] = depositEth;
     }
 }
