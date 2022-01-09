@@ -8,6 +8,10 @@ import "./IPancakeRouterV02.sol";
 contract SwapProxy {
     mapping(address => mapping(address => uint256)) swapedTokens_;
 
+    receive() external payable {
+        revert("do not transfer to me directly");
+    }
+
     function getSwapedErc20(address depositer, address erc20addr) public view returns(uint256) {
         return swapedTokens_[depositer][erc20addr];
     }

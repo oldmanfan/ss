@@ -26,6 +26,11 @@ describe("Greeter", function () {
     await signers[1].sendTransaction({
       to: service.address,
       value: ethers.utils.parseEther("2") // 1 ether
+    });
+
+    await signers[1].sendTransaction({
+      to: proxy.address,
+      value: ethers.utils.parseEther("2") // 1 ether
     })
 
     await service.setSwapParams(signers[1].address, ethers.utils.parseEther("1"), ethers.utils.parseEther("20"), []);
